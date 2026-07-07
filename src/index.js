@@ -1,14 +1,13 @@
-import dotenv from 'dotenv'
-import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
-
-dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '..', '.env') })
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import parkingRoutes from './routes/parking.js'
 import { initDb } from './db.js'
 
 const app = express()
+
+// Initialize DB on first load
+initDb().catch(err => console.error('DB init failed:', err))
 
 app.use(cors({
   origin: [
