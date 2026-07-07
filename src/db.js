@@ -2,17 +2,31 @@ import mysql from 'mysql2/promise'
 
 let pool
 
+function getConfig() {
+  if (process.env.MYSQL_PUBLIC_URL) {
+    return { uri: process.env.MYSQL_PUBLIC_URL, ssl: {} }
+  }
+  return {
+    host: process.env.MYSQL_HOST || process.env.MYSQLHOST || 'localhost',
+    port: parseInt(process.env.MYSQL_PORT || process.env.MYSQLPORT || '3306'),
+    user: process.env.MYSQL_USER || process.env.MYSQLUSER || 'root',
+    password: process.env.MYSQL_PASSWORD || process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || process.env.MYSQLDATABASE || 'parkingsystem',
+    ssl: process.env.MYSQL_PUBLIC_URL ? {} : undefined,
+  }
+}
+
 export async function getPool() {
   if (!pool) {
-    if (process.env.MYSQL_PUBLIC_URL) {
-      pool = mysql.createPool(process.env.MYSQL_PUBLIC_URL)
+    const cfg = getConfig()
+    if (cfg.uri) {
+      pool = mysql.createPool(cfg.uri)
     } else {
       pool = mysql.createPool({
-        host: process.env.MYSQL_HOST || process.env.MYSQLHOST || 'localhost',
-        port: parseInt(process.env.MYSQL_PORT || process.env.MYSQLPORT || '3306'),
-        user: process.env.MYSQL_USER || process.env.MYSQLUSER || 'root',
-        password: process.env.MYSQL_PASSWORD || process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD || '',
-        database: process.env.MYSQL_DATABASE || process.env.MYSQLDATABASE || 'parkingsystem',
+        ...cfg,
+        waitForConnections: true,
+        connectionLimit: 5,
+        connectTimeout: 10000,
       })
     }
   }

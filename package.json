@@ -12,8 +12,5 @@
     "dotenv": "^17.4.2",
     "express": "^4.21.0",
     "mysql2": "^3.22.6"
-  },
-  "devDependencies": {
-    "@railway/cli": "^5.24.0"
   }
 }

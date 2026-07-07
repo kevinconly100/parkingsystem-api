@@ -6,9 +6,6 @@ import { initDb } from './db.js'
 
 const app = express()
 
-// Initialize DB on first load
-initDb().catch(err => console.error('DB init failed:', err))
-
 app.use(cors({
   origin: [
     'http://localhost:5173',
