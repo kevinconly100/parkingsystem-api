@@ -4,15 +4,17 @@ let pool
 
 export async function getPool() {
   if (!pool) {
-    pool = mysql.createPool({
-      host: process.env.MYSQL_HOST || 'localhost',
-      port: parseInt(process.env.MYSQL_PORT || '3306'),
-      user: process.env.MYSQL_USER || 'admin',
-      password: process.env.MYSQL_PASSWORD || 'kevin',
-      database: process.env.MYSQL_DATABASE || 'parkingsystem',
-      waitForConnections: true,
-      connectionLimit: 10,
-    })
+    if (process.env.MYSQL_PUBLIC_URL) {
+      pool = mysql.createPool(process.env.MYSQL_PUBLIC_URL)
+    } else {
+      pool = mysql.createPool({
+        host: process.env.MYSQL_HOST || process.env.MYSQLHOST || 'localhost',
+        port: parseInt(process.env.MYSQL_PORT || process.env.MYSQLPORT || '3306'),
+        user: process.env.MYSQL_USER || process.env.MYSQLUSER || 'root',
+        password: process.env.MYSQL_PASSWORD || process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD || '',
+        database: process.env.MYSQL_DATABASE || process.env.MYSQLDATABASE || 'parkingsystem',
+      })
+    }
   }
   return pool
 }
