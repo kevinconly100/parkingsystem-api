@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import parkingRoutes from './routes/parking.js'
+import vehicleRoutes from './routes/vehicles.js'
 import { initDb } from './db.js'
 
 const app = express()
@@ -22,6 +23,7 @@ app.get('/api/health', (req, res) => {
 })
 
 app.use('/api', parkingRoutes)
+app.use('/api/vehicles', vehicleRoutes)
 
 // Start server if run directly (not on Vercel)
 const isVercel = process.env.VERCEL
