@@ -1,14 +1,19 @@
 import express from 'express'
 import cors from 'cors'
 import parkingRoutes from './routes/parking.js'
+import { initDb } from './db.js'
 
 const app = express()
-const PORT = process.env.PORT || 3001
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://kevinconly100.github.io'],
+  origin: [
+    'http://localhost:5173',
+    'https://kevinconly100.github.io',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'DELETE'],
 }))
+
 app.use(express.json())
 
 app.get('/api/health', (req, res) => {
@@ -17,6 +22,20 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api', parkingRoutes)
 
-app.listen(PORT, () => {
-  console.log(`SmartPark API running on http://localhost:${PORT}`)
-})
+// Start server if run directly (not on Vercel)
+const isVercel = process.env.VERCEL
+if (!isVercel) {
+  const PORT = process.env.PORT || 3001
+  initDb()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`SmartPark API running on http://localhost:${PORT}`)
+      })
+    })
+    .catch(err => {
+      console.error('Database init failed:', err)
+      process.exit(1)
+    })
+}
+
+export default app
