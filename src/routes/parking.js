@@ -12,7 +12,7 @@ const PLATE_REGEX = /^RA[BCDEFGHJKLNPSTVZ]\d{3}[A-Z]$/
 async function getOccupiedSlots() {
   const pool = await getPool()
   const [rows] = await pool.execute(
-    "SELECT slot_number FROM cars WHERE status = 'parked'"
+    "SELECT slot_number FROM parking_log WHERE status = 'parked'"
   )
   return new Set(rows.map(r => r.slot_number))
 }
@@ -21,7 +21,7 @@ router.get('/lot', async (req, res) => {
   try {
     const pool = await getPool()
     const [rows] = await pool.execute(
-      "SELECT * FROM cars WHERE status = 'parked' ORDER BY slot_number ASC"
+      "SELECT * FROM parking_log WHERE status = 'parked' ORDER BY slot_number ASC"
     )
     const slots = new Array(TOTAL_SLOTS).fill(null)
     for (const car of rows) {
@@ -50,8 +50,9 @@ router.post('/park', async (req, res) => {
     }
 
     const pool = await getPool()
+
     const [existing] = await pool.execute(
-      "SELECT id FROM cars WHERE plate_number = ? AND status = 'parked'",
+      "SELECT id FROM parking_log WHERE plate_number = ? AND status = 'parked'",
       [plate]
     )
     if (existing.length > 0) {
@@ -76,7 +77,7 @@ router.post('/park', async (req, res) => {
 
     const entryTime = Date.now()
     await pool.execute(
-      "INSERT INTO cars (plate_number, slot_number, entry_time) VALUES (?, ?, ?)",
+      "INSERT INTO parking_log (plate_number, slot_number, entry_time) VALUES (?, ?, ?)",
       [plate, slot, entryTime]
     )
 
@@ -101,7 +102,7 @@ router.delete('/remove', async (req, res) => {
 
     const pool = await getPool()
     const [cars] = await pool.execute(
-      "SELECT * FROM cars WHERE plate_number = ? AND status = 'parked'",
+      "SELECT * FROM parking_log WHERE plate_number = ? AND status = 'parked'",
       [plate]
     )
     if (cars.length === 0) {
@@ -119,7 +120,7 @@ router.delete('/remove', async (req, res) => {
     }
 
     await pool.execute(
-      "UPDATE cars SET status = 'exited', exit_time = ? WHERE id = ?",
+      "UPDATE parking_log SET status = 'exited', exit_time = ? WHERE id = ?",
       [exitTime, car.id]
     )
 
@@ -138,7 +139,7 @@ router.delete('/clear', async (req, res) => {
   try {
     const pool = await getPool()
     await pool.execute(
-      "UPDATE cars SET status = 'exited', exit_time = ? WHERE status = 'parked'",
+      "UPDATE parking_log SET status = 'exited', exit_time = ? WHERE status = 'parked'",
       [Date.now()]
     )
     res.json({ success: true, message: 'All slots cleared.' })

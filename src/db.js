@@ -35,14 +35,30 @@ export async function getPool() {
 
 export async function initDb() {
   const p = await getPool()
+
   await p.execute(`
-    CREATE TABLE IF NOT EXISTS cars (
+    CREATE TABLE IF NOT EXISTS vehicles (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      plate_number VARCHAR(20) NOT NULL UNIQUE,
+      owner_name VARCHAR(100) DEFAULT '',
+      phone VARCHAR(20) DEFAULT '',
+      email VARCHAR(100) DEFAULT '',
+      model VARCHAR(100) DEFAULT '',
+      color VARCHAR(50) DEFAULT '',
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL
+    )
+  `)
+
+  await p.execute(`
+    CREATE TABLE IF NOT EXISTS parking_log (
       id INT AUTO_INCREMENT PRIMARY KEY,
       plate_number VARCHAR(20) NOT NULL,
       slot_number INT NOT NULL,
       entry_time BIGINT NOT NULL,
       exit_time BIGINT DEFAULT NULL,
-      status VARCHAR(10) NOT NULL DEFAULT 'parked'
+      status VARCHAR(10) NOT NULL DEFAULT 'parked',
+      FOREIGN KEY (plate_number) REFERENCES vehicles(plate_number)
     )
   `)
 }
